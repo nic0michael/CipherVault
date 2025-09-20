@@ -1,5 +1,7 @@
 # CipherVault – Wish List
 
+This is a list of features for us to considered and added to the Requirements List (Functional and NonFunctional)
+
 ## 1. Wishlist Items
 
 **WISH1 – Master Password**
