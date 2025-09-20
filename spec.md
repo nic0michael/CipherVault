@@ -113,27 +113,24 @@
 
 ## 9. GitHub Project & Folder Structure
 
-* The project will be maintained as a **single GitHub repository** with three separate folders/modules:
+* The project will be maintained as a **single GitHub repository** with **three Maven modules**:
 
 ```
-/CipherVault/
-├── /CipherVaultCommon/     # Shared library (Java core)
+/CipherVault/                # Parent project folder
+├── pom.xml                  # Parent POM defining modules
+├── /CipherVaultCommon/      # Shared library module
 │   └── pom.xml
-├── /CipherVaultLight/      # Standalone JavaFX app
+├── /CipherVaultLight/       # Standalone JavaFX app module
 │   └── pom.xml
-├── /CipherVaultFull/       # Web/Docker version
+├── /CipherVaultFull/        # Web/Docker version module
 │   └── pom.xml
 ├── README.md
-└── .gitignore
+└── LICENSE
 ```
 
 * **Each folder is a separate Maven module**.
-* Parent repository may include a **multi-module Maven POM** to build all three together.
-* Benefits:
-
-  * Clear separation of Light, Full, and Common code
-  * Independent evolution of GUI and Web logic
-  * Shared library ensures consistent encryption, key management, and models
+* Parent repository may include a **multi-module Maven POM** to build all modules together.
+* Each module contains **stub classes and package layout**, ready for AI or developer code generation.
 
 ---
 
@@ -169,8 +166,6 @@
 ---
 
 ✅ **Summary**
-CipherVault provides a **secure, self-hosted password manager** with two distinct versions, a **shared Java library** for core functionality, strong cryptography, and a clean, maintainable repository structure. The Light Version is a standalone JavaFX desktop app, and the Full Version is a web-enabled, self-hosted solution suitable for Docker deployment. The **multi-module GitHub repository** ensures clear separation, modularity, and easy maintainability.
+CipherVault provides a **secure, self-hosted password manager** with two distinct versions, a **shared Java library** for core functionality, strong cryptography, and a **multi-module Maven project structure**. The Light Version is a standalone JavaFX desktop app, and the Full Version is a web-enabled, self-hosted solution suitable for Docker deployment.
 
 ---
-
-

@@ -1,13 +1,13 @@
-# CipherVault – Developer Blueprint
+# CipherVault – Developer-Ready Blueprint
 
 ## 1. Project Overview
 
-**CipherVault** is a secure, self-hosted password manager with two versions:
+**CipherVault** is a secure, self-hosted password manager offering two variants:
 
-* **Light Version** – standalone JavaFX desktop app with SQLite
-* **Full Version** – web-enabled Java app with PostgreSQL, deployable in Docker
+* **Light Version** – standalone JavaFX desktop app using SQLite
+* **Full Version** – web-enabled Java app using PostgreSQL, deployable in Docker
 
-Core functionality is shared via a **Java library JAR**.
+Core functionality is shared via **CipherVaultCommon**, a Java library JAR.
 
 ---
 
@@ -16,32 +16,40 @@ Core functionality is shared via a **Java library JAR**.
 ### 2.1 Folder / GitHub Structure
 
 ```
-/CipherVault/
-├── /CipherVaultCommon/     # Shared library (Java core)
-├── /CipherVaultLight/      # Standalone JavaFX app
-├── /CipherVaultFull/       # Web/Docker version
+/CipherVault/                  # Parent repository
+├── pom.xml                    # Parent Maven POM (multi-module)
+├── /CipherVaultCommon/        # Shared library module
+│   └── pom.xml
+├── /CipherVaultLight/         # Light Version module
+│   └── pom.xml
+├── /CipherVaultFull/          # Full Version module
+│   └── pom.xml
 ├── README.md
-├── LICENSE
-└── .gitignore
+└── LICENSE
 ```
 
-### 2.2 Module Overview
-
-| Module            | Responsibility                                              |
-| ----------------- | ----------------------------------------------------------- |
-| CipherVaultCommon | Encryption, database abstraction, models, utility functions |
-| CipherVaultLight  | JavaFX GUI, CLI, SQLite adapter, vault interaction          |
-| CipherVaultFull   | Web UI, REST API, PostgreSQL adapter, multi-user management |
+* **Each module has its own Maven POM** and stub classes ready for implementation.
+* **Parent POM** builds all modules together.
 
 ---
 
-## 3. Class / Module Layout (Shared Library)
+## 3. Module Responsibilities
+
+| Module            | Responsibilities                                                                               | Related FRs                         |
+| ----------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------- |
+| CipherVaultCommon | Core encryption, Argon2id, AES-256, vault/data models, metadata handling, database abstraction | FR3, FR4, FR12                      |
+| CipherVaultLight  | JavaFX GUI, CLI support, SQLite adapter, vault operations                                      | FR2, FR5, FR10                      |
+| CipherVaultFull   | Web UI, REST API, PostgreSQL adapter, multi-user management, audit logging                     | FR2, FR6, FR7, FR8, FR9, FR10, FR11 |
+
+---
+
+## 4. Class / Module Layout (Shared Library)
 
 **CipherVaultCommon**
 
-* `EncryptionManager` – AES-256-GCM encrypt/decrypt, key derivation using Argon2id
-* `VaultEntry` – Represents a single vault record (ID, Title, Username, Password, URL, Notes, Folder)
-* `User` – Represents a user (ID, Username, PasswordHash, Role, Salt)
+* `EncryptionManager` – AES-256-GCM encrypt/decrypt, Argon2id key derivation
+* `VaultEntry` – Single vault record (ID, title, username, password, URL, notes, folder)
+* `User` – User object (ID, username, password hash, role, salt)
 * `MetadataManager` – Reads/writes `/config/metadata.json` containing Base64-encoded salts
 * `DatabaseAdapter` (abstract) – Interface for `SQLiteAdapter` and `PostgresAdapter`
 * `Utils` – Logging, configuration, validation
@@ -49,21 +57,21 @@ Core functionality is shared via a **Java library JAR**.
 **CipherVaultLight**
 
 * `MainApp` – JavaFX entry point
-* `VaultController` – Handles GUI interactions for vault entries
-* `SettingsController` – Handles configuration, master password setup
+* `VaultController` – GUI logic for vault entries
+* `SettingsController` – Master password, backup, import/export
 
 **CipherVaultFull**
 
-* `WebServer` – Embedded server setup (e.g., Jetty, Spring Boot)
+* `WebServer` – Embedded server (e.g., Jetty, Spring Boot)
 * `VaultController` – REST endpoints for CRUD operations
-* `UserController` – User registration, login, role management
+* `UserController` – Registration, login, role management
 * `AuditLogger` – Tracks user actions
 
 ---
 
-## 4. Data Models
+## 5. Data Models
 
-### 4.1 Vault Entry
+### Vault Entry
 
 | Field    | Type   | Description        |
 | -------- | ------ | ------------------ |
@@ -75,7 +83,7 @@ Core functionality is shared via a **Java library JAR**.
 | notes    | String | Optional notes     |
 | folder   | String | Folder/category    |
 
-### 4.2 User (Full Version)
+### User (Full Version)
 
 | Field        | Type   | Description                  |
 | ------------ | ------ | ---------------------------- |
@@ -85,7 +93,7 @@ Core functionality is shared via a **Java library JAR**.
 | salt         | String | Base64-encoded password salt |
 | role         | String | RBAC role                    |
 
-### 4.3 Metadata
+### Metadata
 
 ```json
 {
@@ -98,17 +106,16 @@ Core functionality is shared via a **Java library JAR**.
 
 ---
 
-## 5. Encryption & Security Flow
+## 6. Encryption & Security Flow
 
 1. User enters **master password**.
-2. `EncryptionManager` uses **password salt + master password → Argon2id → session key**.
-3. Session key + **encryption salt → Argon2id → AES-256 key**.
-4. AES-256 key encrypts/decrypts vault entries.
-5. Metadata file stores salts and crypto parameters in Base64.
+2. `EncryptionManager` derives **session key** using Argon2id and password salt.
+3. Session key + encryption key salt → AES-256 key for vault encryption/decryption.
+4. Metadata file `/config/metadata.json` stores Base64-encoded salts and crypto parameters.
 
 ---
 
-## 6. REST API (Full Version)
+## 7. REST API (Full Version)
 
 | Endpoint                  | Method | Input                          | Output                |
 | ------------------------- | ------ | ------------------------------ | --------------------- |
@@ -121,16 +128,16 @@ Core functionality is shared via a **Java library JAR**.
 
 ---
 
-## 7. GUI Mockups (Light Version)
+## 8. GUI Mockups (Light Version)
 
-* **Login Screen**: Master password field, optional key file
-* **Vault Dashboard**: List of entries, folders/categories, search bar
-* **Add/Edit Entry**: Fields for Title, Username, Password, URL, Notes, Folder
-* **Settings**: Change master password, backup, import/export vault
+* **Login Screen** – Master password, optional key file
+* **Vault Dashboard** – List entries, folders/categories, search bar
+* **Add/Edit Entry** – Fields: title, username, password, URL, notes, folder
+* **Settings** – Change master password, backup, import/export
 
 ---
 
-## 8. Build & Deployment
+## 9. Build & Deployment
 
 * **Build Tool**: Maven
 * **Light Version**:
@@ -140,7 +147,7 @@ Core functionality is shared via a **Java library JAR**.
   mvn clean package
   java -jar target/CipherVaultLight.jar
   ```
-* **Full Version** (Docker):
+* **Full Version (Docker)**:
 
   ```bash
   cd CipherVaultFull
@@ -151,14 +158,24 @@ Core functionality is shared via a **Java library JAR**.
 
 ---
 
-## 9. Wishlist / Aspirational Features
+## 10. Features & Wishlist
 
-* WISH1: Master password with optional key file
-* WISH2: Easy-to-use UI / intuitive navigation
+**Core Features**
+
+* AES-256-GCM encrypted vaults
+* Argon2id password hashing
+* Master password with optional key file
+* Multi-user and RBAC support (Full Version)
+* Audit logging, backup/restore, CLI and JavaFX GUI
+
+**Wishlist / Aspirational Features**
+
+* WISH1: Master password + optional key file
+* WISH2: Easy-to-use GUI / navigation
 * WISH3: Secure folders / categories
 * WISH4: Quick add/edit/delete vault entries
-* WISH5: Search & filter entries
-* WISH6: Export / import vault data
+* WISH5: Search & filter
+* WISH6: Export/import vault securely
 * WISH7: Cross-platform support (Windows, Mac)
 * WISH8: Two-Factor Authentication (Full Version)
 * WISH9: Built-in password generator
@@ -166,13 +183,10 @@ Core functionality is shared via a **Java library JAR**.
 
 ---
 
-This **blueprint document** contains everything an AI or developer needs to:
+✅ **Summary**
 
-* Generate project skeletons
-* Implement shared library
-* Build Light and Full versions
-* Implement encryption, database access, and REST API
-* Create GUIs and workflows
+* CipherVault is a **secure, self-hosted password manager** with a **multi-module Maven structure**, **shared library**, and **Light + Full versions**.
+* The blueprint includes **data models, encryption flow, REST API, GUI stubs, and Maven skeleton**, ready for AI or developer implementation.
 
 ---
 
