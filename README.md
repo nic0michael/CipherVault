@@ -1,6 +1,11 @@
 # CipherVault
 
-**CipherVault** is a secure, self-hosted password manager designed as an alternative to KeePass. It offers two variants: a **Light Version** (standalone desktop app) and a **Full Version** (web-enabled, self-hosted, Docker-ready). Core cryptography and data models are shared via a **Java library**.
+**CipherVault** is a secure, self-hosted password manager designed as an alternative to KeePass. It offers two variants:
+
+* **Light Version** – Standalone JavaFX desktop app using SQLite
+* **Full Version** – Web-enabled Java app using PostgreSQL, deployable in Docker
+
+Core functionality is shared via a **Java library JAR** (`CipherVaultCommon`).
 
 ---
 
@@ -19,131 +24,134 @@
 
 ## 1. Features
 
-* AES-256-GCM encryption of vault data
-* Argon2id password hashing with per-installation salts
+* AES-256-GCM encrypted vaults
+* Argon2id password hashing with salts
+* Multi-user support with RBAC (Full Version)
+* Audit logging (Full Version)
 * CLI and JavaFX GUI (Light Version)
 * Web UI and REST API (Full Version)
-* Multi-user support with RBAC (Full Version)
-* Optional key file for extra protection
-* Audit logging (Full Version)
-* Shared Java library for core functionality (encryption, models, database abstraction)
+* Shared Java library for core functionality (encryption, data models, database abstraction)
 
 ---
 
 ## 2. Project Structure
 
+CipherVault is a **Maven multi-module project**:
+
 ```
-/CipherVault/
-├── /CipherVaultCommon/     # Shared library (Java core)
-├── /CipherVaultLight/      # Standalone JavaFX app
-├── /CipherVaultFull/       # Web/Docker version
+/CipherVault/                  # Parent repository
+├── pom.xml                    # Parent POM
+├── /CipherVaultCommon/        # Shared library module
+│   └── pom.xml
+├── /CipherVaultLight/         # Light Version module
+│   └── pom.xml
+├── /CipherVaultFull/          # Full Version module
+│   └── pom.xml
 ├── README.md
-└── .gitignore
+├── LICENSE
+├── spec.md
+├── requirements.md
+└── developer-ready-blueprint.md
 ```
 
-* Each folder is a **separate Maven module**.
-* The parent repository may include a **multi-module Maven POM**.
+* Each module has stub classes ready for implementation.
+* Parent POM builds all modules together.
 
 ---
 
 ## 3. Requirements
 
-* **OS**: Ubuntu Server 22.04 LTS or later
-* **Java**: 17+
-* **Build Tool**: Maven
-* **Databases**:
+For full details, see [requirements.md](requirements.md) and [spec.md](spec.md).
 
-  * SQLite (Light Version)
-  * PostgreSQL (Full Version)
-* **Docker**: For Full Version deployment (optional)
+**High-level requirements:**
+
+* Java 17+
+* Ubuntu 22.04+
+* Maven build tool
+* SQLite (Light Version) / PostgreSQL (Full Version)
+* Docker support (Full Version)
 
 ---
 
 ## 4. Setup & Installation
 
-### 4.1 Light Version – Standalone
+### 4.1 Light Version
 
-1. Clone the repository:
+```bash
+cd CipherVaultLight
+mvn clean package
+java -jar target/CipherVaultLight.jar
+```
 
-   ```bash
-   git clone https://github.com/yourusername/CipherVault.git
-   ```
-2. Navigate to the Light Version folder:
+### 4.2 Full Version (Web / Docker)
 
-   ```bash
-   cd CipherVault/CipherVaultLight
-   ```
-3. Build with Maven:
+```bash
+cd CipherVaultFull
+mvn clean package
+docker build -t ciphervault-full .
+docker run -d -p 8080:8080 ciphervault-full
+```
 
-   ```bash
-   mvn clean package
-   ```
-4. Run the JavaFX desktop app:
-
-   ```bash
-   java -jar target/CipherVaultLight.jar
-   ```
-
-### 4.2 Full Version – Web / Docker
-
-1. Navigate to the Full Version folder:
-
-   ```bash
-   cd CipherVault/CipherVaultFull
-   ```
-2. Build the project with Maven:
-
-   ```bash
-   mvn clean package
-   ```
-3. Run in Docker:
-
-   ```bash
-   docker build -t ciphervault-full .
-   docker run -d -p 8080:8080 ciphervault-full
-   ```
-4. Access the Web UI at `http://localhost:8080`
+Access Web UI at `http://localhost:8080`.
 
 ---
 
 ## 5. Usage
 
-* **Light Version**: Use the JavaFX GUI or CLI to manage vault entries, import/export, and back up the vault file.
-* **Full Version**: Use the Web UI for multi-user access, audit logging, and REST API integration.
+* **Light Version**: JavaFX GUI or CLI for adding, editing, and viewing vault entries.
+* **Full Version**: Web UI and REST API for multi-user management, vault CRUD operations, and audit logging.
 
 ---
 
 ## 6. Encryption & Security
 
-* **Master Password**: hashed with Argon2id + password salt
-* **AES-256-GCM**: encrypts all vault data
-* **Encryption Key Salt**: ensures unique AES key per installation
-* **Metadata File**: stores Base64-encoded salts and crypto parameters in `/config/metadata.json`
+* **Master Password** → Argon2id + password salt → session key
+* **Encryption Key Salt** → Argon2id → AES-256 key → encrypt/decrypt vault data
+* Salts are **Base64-encoded** and stored in `/config/metadata.json`
 
 ---
 
 ## 7. Contributing
 
-* Fork the repository and create a feature branch:
+* Fork repository, create a feature branch:
 
-  ```bash
-  git checkout -b feature/my-feature
-  ```
-* Commit your changes and push:
+```bash
+git checkout -b feature/my-feature
+```
 
-  ```bash
-  git commit -am "Add feature"
-  git push origin feature/my-feature
-  ```
+* Commit and push:
+
+```bash
+git commit -am "Add feature"
+git push origin feature/my-feature
+```
+
 * Submit a pull request for review.
 
 ---
 
 ## 8. License
 
-**CipherVault** is released under the **MIT License**.
-See [LICENSE](LICENSE) for details.
+**CipherVault** is released under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 ---
+
+## 9. Developer References
+
+* [spec.md](spec.md) – Full project specification
+* [requirements.md](requirements.md) – Functional & nonfunctional requirements
+* [developer-ready-blueprint.md](developer-ready-blueprint.md) – Architecture, class layout, API, and Maven skeleton
+
+---
+
+This README now clearly communicates:
+
+* Multi-module Maven structure
+* Links to spec, requirements, and blueprint
+* Setup instructions for both Light and Full versions
+* Encryption and security overview
+
+---
+
 
 
