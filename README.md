@@ -144,14 +144,7 @@ git push origin feature/my-feature
 
 ---
 
-This README now clearly communicates:
 
-* Multi-module Maven structure
-* Links to spec, requirements, and blueprint
-* Setup instructions for both Light and Full versions
-* Encryption and security overview
-
----
 
 
 
