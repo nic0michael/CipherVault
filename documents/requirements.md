@@ -105,10 +105,3 @@
 * Each module contains **stub classes** ready for implementation.
 
 ---
-
-
-
-I can also **update `wish_list.md`** similarly to reference the modules and stub structure if you want.
-
-Do you want me to do that?
-
